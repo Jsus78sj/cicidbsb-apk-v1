@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {findTool} from '../tools/registry.js';
+import '../tools/guidedroom.js';
+const tool=findTool('guidedroom');
+assert.ok(tool);
+assert.equal(findTool('gr'),tool);
+assert.equal(findTool('غرفة_موجهة'),tool);
+assert.equal(tool.own,1);
+assert.equal(tool.noplan,1);
+console.log('guided room registration: ok');

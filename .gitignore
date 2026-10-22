@@ -1,0 +1,15 @@
+# أسرارُ التوقيع لا تدخل المستودع أبداً
+*.jks
+*.keystore
+keystore.properties
+
+# مخرجاتُ البناء تُولَّد ولا تُحفَظ
+android/
+www/
+dist/
+node_modules/
+
+# النظام والمحرّر
+.DS_Store
+Thumbs.db
+*.log

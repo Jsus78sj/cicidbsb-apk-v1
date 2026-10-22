@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {commitGuidedRoom} from '../core/guided-room.js';
+import {newState,S} from '../core/state.js';
+newState();
+const plan={first:[0,0],second:[5000,4000],name:'مجلس',doorOffset:2500,doorWidth:900,doorKind:'door'};
+const result=commitGuidedRoom(plan.first,plan.second,{name:plan.name,doorOffset:plan.doorOffset,doorWidth:plan.doorWidth,thickness:200,type:'ext'});
+assert.equal(result.room.name,'مجلس');
+assert.equal(result.opening.w,900);
+assert.equal(S.walls.length,4);
+assert.equal(S.opens.length,1);
+console.log('guided room action bridge: ok');

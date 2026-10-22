@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {S,newState,canUndo,undo} from '../core/state.js';
+import {commitQuickWall} from '../core/quick-wall.js';
+newState();
+const before=S.walls.length;
+const result=commitQuickWall([1000,2000],3000,0,{thickness:200,type:'int'});
+assert.deepEqual(result.end,[4000,2000]);
+assert.equal(result.wall.t,200);
+assert.equal(S.walls.length,before+1);
+assert.equal(canUndo(),true);
+assert.equal(undo(),true);
+assert.equal(S.walls.length,before);
+assert.throws(()=>commitQuickWall([0,0],0,0,{thickness:200}),/required/);
+assert.equal(S.walls.length,before);
+console.log('quick wall: ok');

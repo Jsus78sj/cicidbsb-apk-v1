@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {S,newState} from '../core/state.js';
+import '../tools/quickwall.js';
+import '../tools/quickroom.js';
+import {findTool} from '../tools/registry.js';
+newState();
+const wall=findTool('quickwall');
+const room=findTool('quickroom');
+assert.ok(wall.prev({pts:[[0,0]],v:{length:3000}},[0,3000]).length>0);
+assert.ok(room.prev({pts:[[0,0]],v:{}},[5000,4000]).length>0);
+assert.equal(S.walls.length,0);
+assert.equal(S.areas.length,0);
+console.log('quick preview wiring: ok');

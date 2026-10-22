@@ -1,0 +1,122 @@
+# ═══ Android APK ═══ المرحلة C
+# كلُّ دفعٍ إلى main (أو تشغيلٌ يدويّ): اختبارات ← www/ ← مشروع أندرويد ← APK
+# بلا أسرار: APK تجريبيّ (debug) يُثبَّت عادياً.
+# مع الأسرار الأربعة: APK + AAB موقَّعان (للتحديث فوق السابق ولـ Google Play).
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      VERSION_CODE: ${{ github.run_number }}
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # v3 كان يطلب الحزمة `tools` (ألغتها Google ~٢٠٢٦-٠٩-١٤ ⇐ Failed to find package 'tools')
+      # v4 + packages صريحة تتجاوزها؛ وتثبيتُ cmdline-tools على 16.0 (الذي نجح تنزيلُه وقبولُ تراخيصه)
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+          cmdline-tools-version: 12266719
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Tests (gate)
+        run: npm run test:ci
+
+      - name: Build www/
+        run: npm run build:android
+
+      - name: Generate android/
+        run: |
+          [ -d android ] || npx cap add android
+          node scripts/android-patch.js "$VERSION_CODE"
+
+      # الأيقونات تحسينٌ لا شرط: فشلُها يُبقي أيقونةَ Capacitor ولا يوقف البناء
+      - name: Icons
+        continue-on-error: true
+        run: |
+          mkdir -p assets
+          cp icons/icon-maskable-512.png assets/icon-only.png
+          npx @capacitor/assets generate --android \
+            --iconBackgroundColor "#0f172a" --splashBackgroundColor "#0f172a"
+
+      - name: Sync
+        run: npx cap sync android
+
+      - name: Version
+        id: v
+        run: echo "name=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Build debug APK
+        if: env.HAS_KEY != 'true'
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          mkdir -p ../out
+          cp app/build/outputs/apk/debug/app-debug.apk "../out/CivilDraft-${VERSION_CODE}.apk"
+
+      - name: Build signed APK + AAB
+        if: env.HAS_KEY == 'true'
+        working-directory: android
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/civildraft.jks"
+          SIGN="-Pandroid.injected.signing.store.file=$RUNNER_TEMP/civildraft.jks \
+                -Pandroid.injected.signing.store.password=$KS_PASS \
+                -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+                -Pandroid.injected.signing.key.password=$KEY_PASS"
+          ./gradlew assembleRelease bundleRelease --no-daemon $SIGN
+          mkdir -p ../out
+          cp app/build/outputs/apk/release/app-release.apk "../out/CivilDraft-${VERSION_CODE}.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "../out/CivilDraft-${VERSION_CODE}.aab"
+          rm -f "$RUNNER_TEMP/civildraft.jks"
+          # التوقيعُ يُتحقَّق ولا يُفترَض، وبصمتُه في السجلّ (تطابق كلَّ إصدار)
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          "$BT/apksigner" verify --print-certs "../out/CivilDraft-${VERSION_CODE}.apk" | grep -i "SHA-256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CivilDraft-${{ github.run_number }}
+          path: out/*
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.name }}-${{ github.run_number }}
+          name: CivilDraft ${{ steps.v.outputs.name }} (${{ github.run_number }})
+          body: |
+            ${{ env.HAS_KEY == 'true' && 'إصدارٌ موقَّع: يُحدَّث فوق السابق.' || 'إصدارٌ تجريبيّ (debug): احذف النسخة السابقة قبل التثبيت إن رفض التحديث.' }}
+            حمّل CivilDraft-${{ github.run_number }}.apk على الهاتف وثبّته.
+          files: out/*
+          prerelease: ${{ env.HAS_KEY != 'true' }}

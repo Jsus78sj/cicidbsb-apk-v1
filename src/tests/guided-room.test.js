@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {S,newState,canUndo,undo} from '../core/state.js';
+import {commitGuidedRoom} from '../core/guided-room.js';
+newState();
+const result=commitGuidedRoom([0,0],[5000,4000],{thickness:200,type:'ext',name:'مجلس',doorOffset:2500,doorWidth:900});
+assert.equal(result.walls.length,4);
+assert.equal(result.room.name,'مجلس');
+assert.equal(result.opening.wall,result.walls[0].id);
+assert.equal(S.opens.length,1);
+assert.equal(canUndo(),true);
+assert.equal(undo(),true);
+assert.equal(S.walls.length,0);
+assert.equal(S.areas.length,0);
+assert.equal(S.opens.length,0);
+console.log('guided room: ok');

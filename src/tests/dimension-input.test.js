@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {dimensionPreview,normalizeDimension} from '../core/dimension-input.js';
+assert.equal(normalizeDimension('3m'),3000);
+assert.equal(normalizeDimension('250 سم'),2500);
+assert.equal(normalizeDimension('1200'),1200);
+assert.equal(normalizeDimension('٢م'),2000);
+assert.equal(normalizeDimension('۲۵۰ سم'),2500);
+assert.equal(normalizeDimension('٣٫٥ م'),3500);
+const p=dimensionPreview([0,0],[3000,3000]);
+assert.equal(Math.round(p.length),4243);
+assert.equal(Math.round(p.angle),45);
+assert.throws(()=>normalizeDimension(''),/فارغ/);
+assert.throws(()=>normalizeDimension('-2m'),/موجب/);
+assert.throws(()=>normalizeDimension('3yd'),/غير صالح/);
+console.log('dimension input: ok');

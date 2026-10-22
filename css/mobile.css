@@ -1,0 +1,331 @@
+/* ═══ قشرة الهاتف ═══ المرحلة B من docs/MOBILE-PLAN.md
+   مصدرٌ واحد لأنماط القشرة. كلُّ قاعدةٍ هنا تحت
+   html[data-shell-active="mobile"] (يكتبها contract.js قبل التركيب)، فلا
+   يتغيّر على الحاسوب ولا على الهاتف بالمكتبية شيء.
+   القواعد: صفر !important · لا نقطةَ توقّفٍ للعرض (القشرةُ نفسُها هي
+   «الهاتف»؛ select.js يقرّر) · خصائصُ منطقيّة لا left/right.
+   أسطحُ الحاسوب التي يفرض touch.css إظهارها لا تُغلَب هنا: index.js
+   ينقلها إلى حاويةٍ مخفيّة (park). وما يبقى في مكانه يُخفى أدناه. */
+
+html[data-shell-active="mobile"]{
+  --m-top:48px; --m-bar:56px;
+  --m-safe-b:env(safe-area-inset-bottom,0px);
+}
+
+/* الحاويةُ لا صندوقَ لها: أبناؤها عناصرُ مرنةٌ في body نفسه، فيأخذ القماشُ
+   (#main · flex:1) ما بقي بين الترويسة والشريط */
+html[data-shell-active="mobile"] #mChrome{display:contents}
+
+/* ─── الترويسة ٤٨px ─── */
+html[data-shell-active="mobile"] #mTop{
+  order:-1; flex:none; block-size:var(--m-top);
+  display:flex; align-items:center; gap:var(--s-2);
+  padding-inline:var(--s-3);
+  padding-block-start:env(safe-area-inset-top,0px);
+  box-sizing:content-box;
+  background:var(--bg2); border-block-end:1px solid var(--ln);
+  z-index:var(--z-chrome);
+}
+html[data-shell-active="mobile"] .mTopB{
+  flex:none; min-inline-size:44px; block-size:44px; padding:0 var(--s-3);
+  display:inline-flex; align-items:center; justify-content:center;
+  border:0; border-radius:var(--r2); background:transparent; color:var(--fg);
+}
+html[data-shell-active="mobile"] .mTopB b{font-size:20px; line-height:1; font-weight:600}
+/* في الترويسة الرمزُ يكفي؛ الاسمُ لقارئ الشاشة (aria-label) */
+html[data-shell-active="mobile"] .mTopB span{display:none}
+html[data-shell-active="mobile"] .mTopB:active{background:var(--hov)}
+html[data-shell-active="mobile"] .mTopT{
+  flex:1; min-inline-size:0; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; font-size:14px; font-weight:600; color:var(--fg);
+}
+html[data-shell-active="mobile"] .mTop-hint{font-weight:400; font-size:12px; color:var(--fg2)}
+html[data-shell-active="mobile"] .mTop-title + .mTop-hint{flex:2}
+
+/* ─── الشريطُ السفليّ الواحد ─── */
+html[data-shell-active="mobile"] .mBar{
+  order:1; flex:none; min-block-size:var(--m-bar);
+  padding-block-end:var(--m-safe-b);
+  display:flex; align-items:stretch; justify-content:space-around;
+  background:var(--bg2); border-block-start:1px solid var(--ln);
+  z-index:var(--z-chrome);
+}
+html[data-shell-active="mobile"] .mBarB{
+  flex:1; min-inline-size:0; min-block-size:var(--m-bar);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:2px; border:0; background:transparent; color:var(--fg);
+}
+html[data-shell-active="mobile"] .mBarB b{font-size:19px; line-height:1}
+html[data-shell-active="mobile"] .mBarB span{font-size:12px; color:var(--fg2)}
+html[data-shell-active="mobile"] .mBarB:active{background:var(--hov)}
+html[data-shell-active="mobile"] .mBarB:focus-visible,
+html[data-shell-active="mobile"] .mTopB:focus-visible{outline:var(--ring); outline-offset:-2px}
+
+/* #touchBar المتبنّى: يصير محتوى الشريط لا عائماً فوق القماش */
+html[data-shell-active="mobile"] .mBar #touchBar{
+  display:flex; flex-direction:column; align-items:stretch; gap:var(--s-3);
+  position:static; inline-size:100%; max-inline-size:none; margin:0;
+  padding:var(--s-3) var(--s-4);
+  border:0; border-radius:0; background:transparent; box-shadow:none;
+  backdrop-filter:none;
+}
+
+/* ─── الورقةُ السفليّة ─── */
+html[data-shell-active="mobile"] #mSheet{
+  position:fixed; inset-inline:0; inset-block-end:0;
+  display:flex; flex-direction:column;
+  padding-block-end:var(--m-safe-b);
+  background:var(--bg2); border-block-start:1px solid var(--ln2);
+  border-start-start-radius:var(--r3); border-start-end-radius:var(--r3);
+  box-shadow:var(--sh3);
+  z-index:var(--z-side);
+  transition:block-size var(--t-sheet) var(--ease), transform var(--t-sheet) var(--ease);
+}
+html[data-shell-active="mobile"] #mSheet[data-snap="half"]{block-size:50dvh}
+html[data-shell-active="mobile"] #mSheet[data-snap="full"]{block-size:92dvh}
+html[data-shell-active="mobile"] .mGrip{
+  flex:none; block-size:28px; inline-size:100%; border:0; background:transparent;
+  touch-action:none; cursor:grab;
+}
+html[data-shell-active="mobile"] .mGrip::before{
+  content:""; display:block; margin:0 auto;
+  inline-size:40px; block-size:4px; border-radius:2px; background:var(--ln2);
+}
+html[data-shell-active="mobile"] .mHead{
+  flex:none; margin:0; padding:0 var(--s-6) var(--s-4);
+  font-size:15px; font-weight:600; color:var(--fg);
+}
+html[data-shell-active="mobile"] .mBody{
+  flex:1; min-block-size:0; overflow:auto; overscroll-behavior:contain;
+  padding:0 var(--s-6) var(--s-6);
+  display:flex; flex-direction:column; gap:var(--s-4);
+}
+html[data-shell-active="mobile"] .mNote{margin:0; color:var(--fg2); font-size:13px}
+html[data-shell-active="mobile"] .mWide{
+  min-block-size:48px; padding:0 var(--s-6); text-align:start;
+  border:1px solid var(--ln); border-radius:var(--r2);
+  background:var(--bg3); color:var(--fg); font-size:14px;
+}
+html[data-shell-active="mobile"] .mWide:active{background:var(--hov)}
+
+/* ─── ما بقي في مكانه من الحاسوب ─── */
+/* المرحلة D: الإرساءُ لا يُرى على الهاتف أبداً — أقسامُه أوراقٌ (props-sheet.js)
+   تُنقل إلى #mSheet عند الطلب ثمّ تعود. والإخفاءُ بالتنسيق لا بـhidden:
+   panels.js يرسم ما ليس hidden، فتبقى الأزرارُ الوكيلة (#xSave …) حيّة */
+html[data-shell-active="mobile"] #side,
+html[data-shell-active="mobile"] #sideE,
+html[data-shell-active="mobile"] .strip,
+html[data-shell-active="mobile"] .dsz,
+html[data-shell-active="mobile"] .dockClose{display:none}
+/* صفُّ القياس في #touchBar يحلّ محلَّ شريط الخيارات */
+html[data-shell-active="mobile"] #optbar{display:none}
+/* سطرُ الأوامر لخطوة النصّ الحرّ وحدها (اسم · نصّ) */
+html[data-shell-active="mobile"]:not(.cdText) #cmdWrap{display:none}
+/* صفُّ القياس (الطول · الزاوية) يُعرَض في القشرة مهما كان العرض */
+html[data-shell-active="mobile"] .mBar #touchBar .tbM{
+  display:flex; align-items:center; gap:var(--s-4); overflow-x:auto; scrollbar-width:none;
+}
+
+/* ─── ورقةُ الفئة: شبكةُ الأدوات (المرحلة C) ─── */
+html[data-shell-active="mobile"] .mGrid{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s-3);
+}
+html[data-shell-active="mobile"] .mTile{
+  min-block-size:56px; padding:var(--s-3) var(--s-4);
+  border:1px solid var(--ln); border-radius:var(--r2);
+  background:var(--bg3); color:var(--fg); font-size:15px; font-weight:500;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+}
+html[data-shell-active="mobile"] .mTile:active{background:var(--hov)}
+html[data-shell-active="mobile"] .mTile:focus-visible{outline:var(--ring); outline-offset:-2px}
+/* عائلة (صحّية · كهرباء · أثاث · غرفة · قوالب…): لمستُها تفتح أعضاءَها، فعلامةُ «تابع» */
+html[data-shell-active="mobile"] .mTile.mGrp{gap:var(--s-2)}
+html[data-shell-active="mobile"] .mTile.mGrp::after{content:"‹"; color:var(--fg3); font-size:18px; line-height:1}
+
+/* ─── ورقةُ البحث (المرحلة C) ─── */
+html[data-shell-active="mobile"] .mQ{
+  flex:none; min-block-size:48px; padding:0 var(--s-5);
+  border:1px solid var(--fldbd); border-radius:var(--r2);
+  background:var(--bg); color:var(--fg); font-size:16px;
+}
+html[data-shell-active="mobile"] .mQ:focus-visible{outline:var(--ring); outline-offset:-2px}
+html[data-shell-active="mobile"] .mRes{display:flex; flex-direction:column; gap:var(--s-2)}
+html[data-shell-active="mobile"] .mRow{
+  min-block-size:48px; padding:var(--s-3) var(--s-5); text-align:start;
+  display:flex; align-items:center; justify-content:space-between; gap:var(--s-3);
+  border:0; border-radius:var(--r2); background:transparent; color:var(--fg); font-size:15px;
+}
+html[data-shell-active="mobile"] .mRow:active{background:var(--hov)}
+html[data-shell-active="mobile"] .mRow small{color:var(--fg3); font-size:12px}
+
+/* ─── أزرارُ الترويسة المعطّلة ─── */
+html[data-shell-active="mobile"] .mTopB:disabled{opacity:.35}
+
+/* ─── أوراقُ اللوحات (المرحلة D) ───
+   القسمُ الحيُّ نفسُه (details.sec من props.js) معروضٌ عموديّاً وكبيراً:
+   حقلٌ في سطر، تسميةٌ فوقه، ٤٨ بكسلاً للّمس، و١٦ بكسلاً للنصّ (لا تكبيرَ
+   تلقائيّ في المتصفّح). كلُّه تحت .mPane فالحاسوبُ لا يتأثّر. */
+html[data-shell-active="mobile"] .mPane{display:flex; flex-direction:column; gap:var(--s-4)}
+html[data-shell-active="mobile"] .mPaneOwn{display:flex; flex-direction:column; gap:var(--s-2)}
+html[data-shell-active="mobile"] .mRow.mOn{background:var(--bg3); font-weight:600}
+html[data-shell-active="mobile"] .mPaneHost details.sec{border:0; margin:0; padding:0; background:transparent}
+/* عنوانُ القسم: الورقةُ لها عنوانُها، ويبقى الملخّص حين تجمع الورقةُ قسمين */
+html[data-shell-active="mobile"] .mPaneHost details.sec > summary{
+  list-style:none; pointer-events:none; padding:var(--s-3) 0;
+  font-size:14px; font-weight:600; color:var(--fg2);
+}
+html[data-shell-active="mobile"] .mPaneHost details.sec > summary::-webkit-details-marker{display:none}
+html[data-shell-active="mobile"] .mPaneHost .row,
+html[data-shell-active="mobile"] .mPaneHost .row2,
+html[data-shell-active="mobile"] .mPaneHost .f{
+  display:flex; flex-direction:column; align-items:stretch; gap:var(--s-2);
+  inline-size:auto; margin-block:var(--s-2);
+}
+html[data-shell-active="mobile"] .mPaneHost label{font-size:14px; color:var(--fg2)}
+html[data-shell-active="mobile"] .mPaneHost input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+html[data-shell-active="mobile"] .mPaneHost select,
+html[data-shell-active="mobile"] .mPaneHost textarea{
+  min-block-size:48px; inline-size:100%; box-sizing:border-box;
+  padding:0 var(--s-4); font-size:16px;
+  border:1px solid var(--fldbd); border-radius:var(--r2); background:var(--bg); color:var(--fg);
+}
+html[data-shell-active="mobile"] .mPaneHost input[type="color"]{min-block-size:48px; inline-size:100%}
+html[data-shell-active="mobile"] .mPaneHost label.chk{
+  display:flex; align-items:center; gap:var(--s-3); min-block-size:48px; font-size:15px; color:var(--fg);
+}
+html[data-shell-active="mobile"] .mPaneHost input[type="checkbox"],
+html[data-shell-active="mobile"] .mPaneHost input[type="radio"]{inline-size:22px; block-size:22px}
+html[data-shell-active="mobile"] .mPaneHost .btnrow{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s-3); margin-block:var(--s-3);
+}
+html[data-shell-active="mobile"] .mPaneHost button{min-block-size:48px; font-size:15px; border-radius:var(--r2)}
+html[data-shell-active="mobile"] .mPaneHost .hint{font-size:13px; line-height:1.5}
+/* الجداولُ العريضة (المساحات · الفتحات) تُمرَّر أفقيّاً لا تُضغَط */
+html[data-shell-active="mobile"] .mPaneHost table{display:block; overflow-x:auto; max-inline-size:100%}
+
+/* ═══ المرحلة F · القشرةُ مصدرُ أنماط الهاتف الوحيد ═══
+   ما كانت القشرةُ تستعيره من كتل ≤768 في touch.css (وحُذفت هناك) صار هنا
+   تحت السمة نفسِها: لا يتعلّق بعرض الشاشة ولا بنوع المؤشّر، فيعمل
+   ?shell=mobile على الحاسوب كما على الهاتف. ولا تجاوزَ قسريّاً واحداً. */
+html[data-shell-active="mobile"],
+html[data-shell-active="mobile"] body{overflow-x:hidden; max-inline-size:100vw}
+
+/* ─── أزرارُ الشريط المتبنّى (✓ ⭘ ↶ ⚙ ✕ · نقل · نسخ …) ─── ٤٨ بكسلاً */
+html[data-shell-active="mobile"] #touchBar .tbB{
+  display:flex; align-items:center; justify-content:center; gap:var(--s-6);
+  overflow-x:auto; scrollbar-width:none;
+}
+html[data-shell-active="mobile"] #touchBar .tbB::-webkit-scrollbar{display:none}
+html[data-shell-active="mobile"] #touchBar .tbB button{
+  flex:none; min-inline-size:56px; block-size:48px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1px; padding:0 var(--s-8);
+  background:transparent; color:var(--fg);
+  border:1px solid transparent; border-radius:var(--r-pill);
+  font:inherit; cursor:pointer;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+}
+html[data-shell-active="mobile"] #touchBar .tbB button b{font-size:19px; line-height:1; font-weight:600}
+html[data-shell-active="mobile"] #touchBar .tbB button span{font-size:11px; line-height:1.1; color:var(--fg2)}
+html[data-shell-active="mobile"] #touchBar .tbB button:active{background:var(--hov)}
+html[data-shell-active="mobile"] #touchBar button:focus-visible{outline:var(--ring); outline-offset:-2px}
+html[data-shell-active="mobile"] #touchBar .tb-ok{background:var(--acq); color:var(--acf); border-color:var(--acb)}
+html[data-shell-active="mobile"] #touchBar .tb-ok span{color:inherit}
+html[data-shell-active="mobile"] #touchBar .tb-esc{margin-inline-start:var(--s-4); color:var(--fg2)}
+html[data-shell-active="mobile"] #touchBar .tb-del b{color:var(--er)}
+
+/* ─── صفُّ القياس: الطول · الزاوية · آخرُ طول · طبّق ─── */
+html[data-shell-active="mobile"] #touchBar .tbM::-webkit-scrollbar{display:none}
+html[data-shell-active="mobile"] #touchBar .tbM{overscroll-behavior-x:contain}
+html[data-shell-active="mobile"] #touchBar .tbF{
+  flex:none; display:flex; align-items:center; gap:var(--s-3);
+  background:var(--bg4); border:1px solid var(--fldbd); border-radius:var(--r2,8px);
+  padding-inline:var(--s-5); min-block-size:44px;
+}
+html[data-shell-active="mobile"] #touchBar .tbF span,
+html[data-shell-active="mobile"] #touchBar .tbF i{font-size:11px; font-style:normal; color:var(--fg3)}
+html[data-shell-active="mobile"] #touchBar .tbF input{
+  inline-size:64px; block-size:40px; border:0; background:transparent;
+  color:var(--fg); font:inherit; font-size:16px; text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+html[data-shell-active="mobile"] #touchBar .tbF-a input{inline-size:48px}
+html[data-shell-active="mobile"] #touchBar .tbF input::placeholder{color:var(--fg3); opacity:.9}
+html[data-shell-active="mobile"] #touchBar .tbF:focus-within{border-color:var(--ac); box-shadow:var(--focus)}
+html[data-shell-active="mobile"] #touchBar .tbA{
+  flex:none; display:inline-flex; border:1px solid var(--fldbd);
+  border-radius:var(--r-pill); overflow:hidden;
+}
+html[data-shell-active="mobile"] #touchBar .tbA button{
+  min-inline-size:40px; block-size:44px; padding:0 var(--s-3);
+  background:var(--bg4); color:var(--fg2); border:0; border-inline-start:1px solid var(--fldbd);
+  font:inherit; font-size:12px; touch-action:manipulation;
+}
+html[data-shell-active="mobile"] #touchBar .tbA button:first-child{border-inline-start:0}
+html[data-shell-active="mobile"] #touchBar .tbA button[aria-checked="true"]{background:var(--acq); color:var(--acf)}
+html[data-shell-active="mobile"] #touchBar .tbGo{
+  flex:none; min-inline-size:56px; block-size:44px; padding:0 var(--s-8);
+  background:var(--ac); color:var(--acon); border:0; border-radius:var(--r-pill);
+  font:inherit; font-size:14px; font-weight:600; touch-action:manipulation;
+}
+
+/* ─── ⚙ مساعداتُ الرسم ─── */
+html[data-shell-active="mobile"] #touchBar .tbPop{
+  display:flex; flex-wrap:wrap; gap:var(--s-4); justify-content:center;
+  padding-block-end:var(--s-4); border-block-end:1px solid var(--ln2);
+}
+html[data-shell-active="mobile"] #touchBar .tbPop button{
+  min-block-size:44px; padding:0 var(--s-8);
+  background:var(--bg4); color:var(--fg2);
+  border:1px solid var(--fldbd); border-radius:var(--r-pill);
+  font:inherit; font-size:13px; touch-action:manipulation;
+}
+html[data-shell-active="mobile"] #touchBar .tbPop button[aria-pressed="true"]{background:var(--acq); color:var(--acf); border-color:var(--acb)}
+html[data-shell-active="mobile"] #touchBar .tbPop .tbFit{color:var(--fg)}
+html[data-shell-active="mobile"] #touchBar .tb-aids[aria-expanded="true"]{background:var(--hov)}
+
+/* ─── حقولُ القياس عند المؤشّر: صفُّ القياس في الشريط يكفي ─── */
+html[data-shell-active="mobile"] #dynBox{display:none}
+
+/* ─── السجلُّ تنبيهاً عابراً ─── (ui/toast.js · toastOn يسأل السمةَ نفسَها) */
+html[data-shell-active="mobile"]:not(.logOpen) #log{display:none}
+html[data-shell-active="mobile"] #toast{
+  display:block; position:fixed; z-index:var(--z-peek);
+  inset-inline:var(--s-8); margin-inline:auto; inline-size:max-content; max-inline-size:calc(100vw - 24px);
+  inset-block-start:calc(env(safe-area-inset-top,0px) + var(--m-top) + var(--s-5));
+  padding:var(--s-5) var(--s-10); border-radius:var(--r-pill);
+  background:var(--bg3); color:var(--fg); border:1px solid var(--ln2);
+  box-shadow:var(--sh3); font-size:13px; line-height:1.5; text-align:center;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;
+}
+html[data-shell-active="mobile"] #toast[hidden]{display:none}
+html[data-shell-active="mobile"] #toast.t-ok{border-color:var(--ok)}
+html[data-shell-active="mobile"] #toast.t-er{border-color:var(--er); color:var(--er)}
+html[data-shell-active="mobile"] #toast.t-wr{border-color:var(--wr)}
+
+/* ─── سطرُ الأوامر (خطوةُ النصّ الحرّ وحدها) لا يُخرج أزرارَه من الشاشة ─── */
+html[data-shell-active="mobile"] #cmdline{gap:var(--s-3)}
+html[data-shell-active="mobile"] #clPrompt{min-inline-size:0; max-inline-size:24vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+html[data-shell-active="mobile"] #clLive{min-inline-size:0; max-inline-size:22vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+html[data-shell-active="mobile"] #clLive:empty{display:none}
+html[data-shell-active="mobile"] #clIn{min-inline-size:0}
+
+/* ─── العائماتُ فوق الشريط السفليّ لا عليه ───
+   --stageBot (ui/viewport.js) = ما تحت اللوح، وفي القشرة هو الشريطُ نفسُه */
+html[data-shell-active="mobile"] body .hb-fab{bottom:calc(var(--stageBot,var(--m-bar)) + var(--s-8))}
+html[data-shell-active="mobile"] body .helpbot{bottom:calc(var(--stageBot,var(--m-bar)) + var(--s-8))}
+html[data-shell-active="mobile"] #tour{
+  inset-inline:var(--s-6); width:auto;
+  bottom:calc(var(--stageBot,var(--m-bar)) + var(--s-8));
+}
+/* البوصلةُ أعلى اللوح على جهة البدء: لا تركب الشريط ولا التنبيه */
+html[data-shell-active="mobile"] #compass{
+  inset-inline-end:auto; inset-inline-start:9px;
+  inset-block-end:auto; inset-block-start:var(--s-8);
+}
+/* أثناء الأداة أو التحديد: الشريطُ هو الواجهة، فالعائماتُ تُخلي اللوح */
+html[data-shell-active="mobile"].cdDraw body .hb-fab,
+html[data-shell-active="mobile"].cdDraw body .helpbot,
+html[data-shell-active="mobile"].cdDraw #compass,
+html[data-shell-active="mobile"].cdSel body .hb-fab{display:none}
+html[data-shell-active="mobile"].cdDraw #tour{bottom:auto; inset-block-start:var(--s-6)}

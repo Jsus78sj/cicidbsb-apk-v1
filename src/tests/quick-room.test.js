@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {S,newState,canUndo,undo} from '../core/state.js';
+import {commitQuickRoom} from '../core/quick-room.js';
+newState();
+const result=commitQuickRoom([0,0],[5000,4000],{thickness:200,type:'ext',name:'مجلس'});
+assert.equal(result.walls.length,4);
+assert.equal(result.room.name,'مجلس');
+assert.equal(S.walls.length,4);
+assert.equal(S.areas.length,1);
+assert.equal(canUndo(),true);
+assert.equal(undo(),true);
+assert.equal(S.walls.length,0);
+assert.equal(S.areas.length,0);
+assert.throws(()=>commitQuickRoom([0,0],[0,0],{thickness:200}),/area/);
+assert.equal(S.walls.length,0);
+assert.equal(S.areas.length,0);
+console.log('quick room: ok');

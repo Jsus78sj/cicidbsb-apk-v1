@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {saveGuidedPlan,loadGuidedPlan,guidedPlanSummary} from '../core/guided-persistence.js';
+const source={meta:{name:'بيت',level:0,wallH:3000},levelDefs:[{n:0,name:'أرضي',elev:0,h:3000,slab:200}],walls:[{id:'w1',level:0,a:[0,0],b:[5000,0],t:200,type:'ext',align:'c'}],opens:[],areas:[]};
+const text=saveGuidedPlan(source);
+const loaded=loadGuidedPlan(text);
+assert.equal(loaded.state.walls.length,1);
+assert.equal(loaded.report.ok,true);
+assert.deepEqual(guidedPlanSummary(loaded.state),{walls:1,openings:0,rooms:0,levels:1});
+assert.throws(()=>loadGuidedPlan('{bad'),/JSON/);
+console.log('guided persistence: ok');

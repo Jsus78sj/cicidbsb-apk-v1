@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {S,newState,canUndo,undo} from '../core/state.js';
+import {addWall} from '../core/walls.js';
+import {commitQuickOpening} from '../core/quick-opening.js';
+newState();
+const wall=addWall([0,0],[5000,0],200,'ext','c');
+const before=S.opens.length;
+const result=commitQuickOpening(wall,2500,{kind:'door',width:900,height:2100});
+assert.equal(result.opening.wall,wall.id);
+assert.equal(S.opens.length,before+1);
+assert.equal(canUndo(),true);
+assert.equal(undo(),true);
+assert.equal(S.opens.length,before);
+assert.throws(()=>commitQuickOpening(wall,2500,{kind:'door',width:6000}),/لا موضع|لا يتّسع/);
+assert.equal(S.opens.length,before);
+console.log('quick opening: ok');

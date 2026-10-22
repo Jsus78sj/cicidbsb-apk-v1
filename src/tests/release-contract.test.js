@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {normalizeDimension} from '../core/dimension-input.js';
+import {createGuidedRoomWizard,setCorners,setRoomName,setDoorFromText,previewGuidedRoom} from '../core/guided-room-wizard.js';
+import {guidedPlanSummary} from '../core/guided-persistence.js';
+let w=createGuidedRoomWizard();
+w=setCorners(w,[0,0],[5000,4000]);
+w=setRoomName(w,'مجلس');
+w=setDoorFromText(w,'٢٫٥م','٩٠٠ ملم');
+const plan=previewGuidedRoom(w);
+assert.equal(plan.ready,true);
+assert.equal(normalizeDimension('٥م'),5000);
+assert.deepEqual(guidedPlanSummary({walls:[1,2,3,4],opens:[1],areas:[1],levelDefs:[1]}),{walls:4,openings:1,rooms:1,levels:1});
+console.log('release contract: ok');

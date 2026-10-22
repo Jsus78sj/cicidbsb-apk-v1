@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {createGuidedRoomWizard,previewGuidedRoom,setCorners,setDoorFromText,setRoomName} from '../core/guided-room-wizard.js';
+let w=createGuidedRoomWizard();
+assert.equal(w.step,'size');
+w=setCorners(w,[0,0],[5000,4000]);
+assert.equal(w.step,'name');
+w=setRoomName(w,'مجلس');
+assert.equal(w.step,'door');
+w=setDoorFromText(w,'٢٫٥ م','٩٠٠ ملم');
+assert.equal(w.step,'preview');
+const p=previewGuidedRoom(w);
+assert.equal(p.ready,true);
+assert.equal(p.name,'مجلس');
+assert.equal(p.doorOffset,2500);
+assert.equal(p.doorWidth,900);
+assert.equal(createGuidedRoomWizard().step,'size');
+console.log('guided room wizard: ok');
